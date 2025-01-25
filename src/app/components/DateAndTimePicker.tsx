@@ -11,7 +11,7 @@ const TimePicker = dynamic(() => import('./TimePicker'), { ssr: false });
 const DateAndTimePicker = () => {
     const today:dayjs.Dayjs = dayjs(new Date()) ;
   return (
-    <div>
+    <div className='flex flex-col'>
         <LocalizationProvider adapterLocale="pl" dateAdapter={AdapterDayjs}>
             <Calendar currentDate={today}/>
             <TimePicker currentDate={today}/>
