@@ -27,6 +27,7 @@ interface Event {
   start: string;
   end: string;
   description: string;
+  calendarId: string;
 }
 
 function CalendarApp() {
@@ -50,6 +51,7 @@ function CalendarApp() {
     end: '',
     description: '',
     id: '',
+    calendarId: '',
   });
 
   const modalPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -80,6 +82,7 @@ function CalendarApp() {
       end: '',
       description: '',
       id: '',
+      calendarId: '',
     };
     modalPositionRef.current = { x: event.clientX, y: event.pageY };
 
@@ -113,6 +116,48 @@ function CalendarApp() {
     return createCalendar({
       views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
       events: events,
+      calendars: {
+        yellow: {
+          colorName: 'blue',
+          darkColors: {
+            main: '#ffffff',
+            onContainer: '#ffffff',
+            container: '#a29742',
+          }
+        },
+        green: {
+          colorName: 'green',
+          darkColors: {
+            main: '#ffffff',
+            onContainer: '#ffffff',
+            container: '#3c8f3c',
+          }
+        },
+        blue: {
+          colorName: 'blue',
+          darkColors: {
+            main: '#ffffff',
+            onContainer: '#ffffff',
+            container: '#3c3c8f',
+          }
+        },
+        red: {
+          colorName: 'red',
+          darkColors: {
+            main: '#ffffff',
+            onContainer: '#ffffff',
+            container: '#8f3c3c',
+          }
+        },
+        purple: {
+          colorName: 'purple',
+          darkColors: {
+            main: '#ffffff',
+            onContainer: '#ffffff',
+            container: '#4f378b',
+          }
+        },
+      },
       isDark: true,
       isResponsive: true,
       plugins: [eventsService, dragAndDropPlugin, currentTimePlugin, resizePlugin, eventModalPlugin],

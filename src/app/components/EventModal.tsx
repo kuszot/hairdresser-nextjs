@@ -13,13 +13,14 @@ interface EventModalProps {
         start: string,
         end: string,
         description: string,
-        id: string
+        id: string,
+        calendarId: string
     };
     position : { x: number, y: number };
 
     mode : string;
 
-    setEvents : (events: Array<{ title: string; start: string; end: string; description: string; id: string; }>) => void;
+    setEvents : (events: Array<{ title: string; start: string; end: string; description: string; id: string; calendarId : string }>) => void;
 
     events: Array<{
         title: string;
@@ -27,6 +28,7 @@ interface EventModalProps {
         end: string;
         description: string;
         id: string;
+        calendarId: string;
     }>;
 
     closeModal : () => void;
@@ -47,6 +49,8 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
     
     const viewportWidth = window.innerWidth;
     const viewportHeight = document.body.scrollHeight;
+
+    const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
     
     let adjustedX = position.x;
     let adjustedY = position.y;
@@ -76,6 +80,7 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
                 start: start!.toISOString().slice(0, 16).replace('T', ' '),
                 end: end!.toISOString().slice(0, 16).replace('T', ' '),
                 description: description,
+                calendarId : colors[Math.floor(Math.random() * colors.length)]
             }
             try {
                 const response = await fetch('http://localhost:3001/events', {
