@@ -17,38 +17,43 @@ interface eventModalProps {
 
 const eventModal = ({event,position,mode} : eventModalProps) => {
 
+    
     const [name, setName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [start, setStart] = useState<Dayjs | null>(dayjs(event.start));
     const [end, setEnd] = useState<Dayjs | null>(dayjs(event.start));
-
-
+    
+    
     const modalWidth = 300;
     const modalHeight = 378;
-
+    
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-
+    
     let adjustedX = position.x;
     let adjustedY = position.y;
-
+    
     if (position.x + modalWidth > viewportWidth) {
         adjustedX = viewportWidth - modalWidth;
     } else if (position.x - modalWidth <= 0) {
         adjustedX = modalWidth;
     }
-
-
+    
+    
     if (position.y + modalHeight > viewportHeight) {
         adjustedY = viewportHeight - modalHeight - 16;
     } else if (position.y - modalHeight <= 0) {
         adjustedY = modalHeight
     }
+    
+    function validateForm() {
+        return name.length > 0 && description.length > 0 && start !== null && end !== null && start.isBefore(end);
+    }
 
-    console.log(mode)
 
-  return (
-    <div className='absolute w-[300px]' style={{
+    
+    return (
+        <div className='absolute w-[300px]' style={{
         left: `${adjustedX}px`,
         top: `${adjustedY}px`,
         transform: 'translate(-50%, -50%)',
