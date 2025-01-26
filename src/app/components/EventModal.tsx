@@ -32,6 +32,8 @@ interface EventModalProps {
     closeModal : () => void;
 }
 
+
+
 const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventModalProps) => {
     
     const [name, setName] = useState<string>('');
@@ -44,7 +46,7 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
     const modalHeight = 378;
     
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const viewportHeight = document.body.scrollHeight;
     
     let adjustedX = position.x;
     let adjustedY = position.y;
@@ -108,8 +110,8 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
       }}>
         <div className='bg-white p-4 rounded-lg shadow-lg flex flex-col gap-3'>
             <h2 className='text-xl font-bold mb-4 text-black'>Dodaj nowe zdarzenie</h2>
-            <TextField value={name} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} id="standard-basic" label="Imię i nazwisko" variant="outlined" />
-            <TextField value={description} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)} id="standard-basic" label="Opis" variant="outlined" />
+            <TextField id='name' value={name} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} label="Imię i nazwisko" variant="outlined" />
+            <TextField id='description' value={description} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)} label="Opis" variant="outlined" />
             <LocalizationProvider adapterLocale="pl" dateAdapter={AdapterDayjs}>
                 <DateTimePicker
                     label="od"
