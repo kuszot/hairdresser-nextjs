@@ -6,6 +6,7 @@ import {
   createViewWeek,
   createViewMonthGrid,
   createViewMonthAgenda,
+  CalendarEventExternal,
 } from '@schedule-x/calendar';
 import { createEventsServicePlugin } from '@schedule-x/events-service';
 
@@ -86,6 +87,27 @@ function CalendarApp() {
     setIsModalOpen(prevState => !prevState); // Correctly toggle the state
   };
 
+  const updateData = async (event: CalendarEventExternal) => {
+    try {
+      const response = await fetch(`http://localhost:3001/events/${event.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const result = await response.json();
+      console.log('Success:', result);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   // Calendar configuration (memoized to avoid re-rendering unnecessarily)
   const calendar = useMemo(() => {
     return createCalendar({
@@ -106,6 +128,9 @@ function CalendarApp() {
             { once: true }
           );
         },
+        onEventUpdate(updateEvent) {
+          updateData(updateEvent);
+        }
       },
     });
   }, [events]); // Only recreate the calendar when `events` change
