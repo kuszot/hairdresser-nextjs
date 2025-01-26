@@ -1,9 +1,9 @@
-import DateAndTimePicker from "./components/DateAndTimePicker";
+import Calendar from "./components/Calendar";
 
 export default function Home() {
   return (
-    <div className='flex justify-center min-h-screen py-2'>
-        <DateAndTimePicker />
+    <div>
+        <Calendar/>
     </div>
   );
 }
