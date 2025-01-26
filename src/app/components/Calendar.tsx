@@ -1,101 +1,133 @@
 'use client';
-import { ScheduleXCalendar } from '@schedule-x/react'
+import { ScheduleXCalendar } from '@schedule-x/react';
 import {
-    createCalendar,
-    createViewDay,
-    createViewMonthAgenda,
-    createViewMonthGrid,
-    createViewWeek,
-} from '@schedule-x/calendar'
-import { createEventsServicePlugin } from '@schedule-x/events-service'
+  createCalendar,
+  createViewDay,
+  createViewWeek,
+  createViewMonthGrid,
+  createViewMonthAgenda,
+} from '@schedule-x/calendar';
+import { createEventsServicePlugin } from '@schedule-x/events-service';
 
-import '@schedule-x/theme-default/dist/index.css'
-import {useEffect, useState } from 'react'
+import '@schedule-x/theme-default/dist/index.css';
+import { useEffect, useState, useRef, useMemo } from 'react';
 
-// pluggins
-import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop'
-import { createCurrentTimePlugin } from '@schedule-x/current-time'
-import { createResizePlugin } from '@schedule-x/resize'
-import { createEventModalPlugin } from '@schedule-x/event-modal'
+// plugins
+import { createDragAndDropPlugin } from '@schedule-x/drag-and-drop';
+import { createCurrentTimePlugin } from '@schedule-x/current-time';
+import { createResizePlugin } from '@schedule-x/resize';
+import { createEventModalPlugin } from '@schedule-x/event-modal';
 
-import AddEventModal from './AddEventModal';
+import EventModal from './EventModal';
+
+interface Event {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  description: string;
+}
 
 function CalendarApp() {
-  const currentDate : Date = new Date();
+  const currentDate: Date = new Date();
 
-  // initialize plugins
-  const eventsService = useState(() => createEventsServicePlugin())[0]
+  // Initialize plugins
+  const eventsService = useState(() => createEventsServicePlugin())[0];
   const dragAndDropPlugin = createDragAndDropPlugin();
   const currentTimePlugin = createCurrentTimePlugin();
   const resizePlugin = createResizePlugin();
   const eventModalPlugin = createEventModalPlugin();
 
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [newEvent, setNewEvent] = useState<{title:string, start:string}>({title: '', start: ''});
-  const [modalPosition, setModalPosition] = useState<{ x: number, y: number }>({x: 0, y: 0});
+  const [mode, setMode] = useState<string>('add');
 
-//   fetch events
+  // Using refs for modal-related data
+  const newEventRef = useRef<Event>({
+    title: '',
+    start: '',
+    end: '',
+    description: '',
+    id: '',
+  });
+
+  const modalPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Fetch events
   useEffect(() => {
     const fetchEvents = async () => {
-        try {
-            const response = await fetch('http://localhost:3001/events');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            setEvents(data);
-        } catch (error) {
-            console.error(error);
+      try {
+        const response: Response = await fetch('http://localhost:3001/events');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
-    fetchEvents();
-  }, [])
 
-
-  const handleDateClick = (event : MouseEvent,dateTime : string) => {
-    setIsModalOpen(!isModalOpen);
-    setNewEvent({
-        title: '',
-        start: dateTime,
-    });
-    setModalPosition({x: event.clientX, y: event.clientY});
-  }
-  
- 
-  const calendar = createCalendar({
-    views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
-    events: events,
-    isDark: true,
-    isResponsive: true,
-    plugins: [eventsService,dragAndDropPlugin,currentTimePlugin,resizePlugin,eventModalPlugin],
-    locale: 'pl-PL',
-    selectedDate: currentDate.toISOString().split('T')[0],
-    callbacks: {
-      onClickDateTime(dateTime) {
-        document.addEventListener(
-          'click',
-          (event) => {
-            handleDateClick(event as MouseEvent, dateTime);
-          },
-          { once: true }
-        );
+        const data: Event[] = await response.json();
+        setEvents(data);
+      } catch (error) {
+        console.error(error);
       }
-    }
-  })
- 
-  useEffect(() => {
-    // get all events
-    eventsService.getAll()
-  }, [])
- 
+    };
+    fetchEvents();
+  }, []);
+
+  // Handle date click to show modal
+  const handleDateClick = (event: MouseEvent, dateTime: string) => {
+    newEventRef.current = {
+      title: '',
+      start: dateTime,
+      end: '',
+      description: '',
+      id: '',
+    };
+    modalPositionRef.current = { x: event.clientX, y: event.clientY };
+
+    // Toggle modal visibility
+    setIsModalOpen(prevState => !prevState); // Correctly toggle the state
+  };
+
+  // Calendar configuration (memoized to avoid re-rendering unnecessarily)
+  const calendar = useMemo(() => {
+    return createCalendar({
+      views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
+      events: events,
+      isDark: true,
+      isResponsive: true,
+      plugins: [eventsService, dragAndDropPlugin, currentTimePlugin, resizePlugin, eventModalPlugin],
+      locale: 'pl-PL',
+      selectedDate: currentDate.toISOString().split('T')[0],
+      callbacks: {
+        onClickDateTime(dateTime) {
+          document.addEventListener(
+            'click',
+            (event) => {
+              handleDateClick(event as MouseEvent, dateTime);
+            },
+            { once: true }
+          );
+        },
+      },
+    });
+  }, [events]); // Only recreate the calendar when `events` change
+
   return (
-    <div className='relative'>
-      {isModalOpen && <AddEventModal event={newEvent} position={modalPosition}/>}
+    <div className="relative">
+      {/* Render modal if it's open */}
+      {isModalOpen && (
+        <EventModal
+          events={events}
+          setEvents={setEvents}
+          event={newEventRef.current} // Use ref values here
+          position={modalPositionRef.current} // Use ref values here
+          mode={mode}
+          closeModal={() => setIsModalOpen(false)} // Close modal function
+        />
+      )}
+
+      {/* Render the calendar */}
       <ScheduleXCalendar calendarApp={calendar} />
     </div>
-  )
+  );
 }
- 
-export default CalendarApp
+
+export default CalendarApp;
