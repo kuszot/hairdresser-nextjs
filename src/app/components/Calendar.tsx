@@ -32,7 +32,8 @@ function CalendarApp() {
 
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [newEvent, setNewEvent] = useState<object>({});
+  const [newEvent, setNewEvent] = useState<{title:string, start:string}>({title: '', start: ''});
+  const [modalPosition, setModalPosition] = useState<{ x: number, y: number }>({x: 0, y: 0});
 
 //   fetch events
   useEffect(() => {
@@ -53,12 +54,13 @@ function CalendarApp() {
   }, [])
 
 
-  const handleDateClick = (dateTime : string) => {
-    setIsModalOpen(true);
+  const handleDateClick = (event : MouseEvent,dateTime : string) => {
+    setIsModalOpen(!isModalOpen);
     setNewEvent({
         title: '',
         start: dateTime,
     });
+    setModalPosition({x: event.clientX, y: event.clientY});
   }
   
  
@@ -71,9 +73,15 @@ function CalendarApp() {
     locale: 'pl-PL',
     selectedDate: currentDate.toISOString().split('T')[0],
     callbacks: {
-        onClickDateTime(dateTime) {
-            handleDateClick(dateTime);
-        },
+      onClickDateTime(dateTime) {
+        document.addEventListener(
+          'click',
+          (event) => {
+            handleDateClick(event as MouseEvent, dateTime);
+          },
+          { once: true }
+        );
+      }
     }
   })
  
@@ -83,8 +91,8 @@ function CalendarApp() {
   }, [])
  
   return (
-    <div>
-      {isModalOpen && <AddEventModal/>}
+    <div className='relative'>
+      {isModalOpen && <AddEventModal event={newEvent} position={modalPosition}/>}
       <ScheduleXCalendar calendarApp={calendar} />
     </div>
   )
