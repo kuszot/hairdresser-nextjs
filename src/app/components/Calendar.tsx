@@ -80,7 +80,7 @@ function CalendarApp() {
       description: '',
       id: '',
     };
-    modalPositionRef.current = { x: event.clientX, y: event.clientY };
+    modalPositionRef.current = { x: event.clientX, y: event.pageY };
 
     // Toggle modal visibility
     setIsModalOpen(prevState => !prevState); // Correctly toggle the state
@@ -125,7 +125,9 @@ function CalendarApp() {
       )}
 
       {/* Render the calendar */}
-      <ScheduleXCalendar calendarApp={calendar} />
+      <ScheduleXCalendar
+        calendarApp={calendar}
+      />
     </div>
   );
 }
