@@ -3,20 +3,36 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
+import { v4 as uuidv4 } from 'uuid';
 
 import {useState} from 'react';
 
-interface eventModalProps {
+interface EventModalProps {
     event : {
         title: string,
         start: string,
+        end: string,
+        description: string,
+        id: string
     };
     position : { x: number, y: number };
+
     mode : string;
+
+    setEvents : (events: Array<{ title: string; start: string; end: string; description: string; id: string; }>) => void;
+
+    events: Array<{
+        title: string;
+        start: string;
+        end: string;
+        description: string;
+        id: string;
+    }>;
+
+    closeModal : () => void;
 }
 
-const eventModal = ({event,position,mode} : eventModalProps) => {
-
+const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventModalProps) => {
     
     const [name, setName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
@@ -50,6 +66,37 @@ const eventModal = ({event,position,mode} : eventModalProps) => {
         return name.length > 0 && description.length > 0 && start !== null && end !== null && start.isBefore(end);
     }
 
+    async function handleAddEvent() {
+        if (validateForm()) {
+            const newEvent = {
+                id: uuidv4(),
+                title: name,
+                start: start!.toISOString().slice(0, 16).replace('T', ' '),
+                end: end!.toISOString().slice(0, 16).replace('T', ' '),
+                description: description,
+            }
+            try {
+                const response = await fetch('http://localhost:3001/events', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(newEvent),
+                });
+            
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+            
+                const result = await response.json();
+                console.log('Success:', result);
+                setEvents([...events, newEvent]);
+                closeModal();
+              } catch (error) {
+                console.error('Error:', error);
+            }
+        }           
+    }
 
     
     return (
@@ -78,11 +125,11 @@ const eventModal = ({event,position,mode} : eventModalProps) => {
                 />
             </LocalizationProvider>
             <div>
-                <button className='bg-blue-500 text-white px-4 py-2 rounded-lg'>{mode === 'add' ? "Dodaj" : "Edytuj"}</button>
+                <button onClick={handleAddEvent} className='bg-blue-500 text-white px-4 py-2 rounded-lg'>{mode === 'add' ? "Dodaj" : "Edytuj"}</button>
             </div>
         </div>
     </div>
   )
 }
 
-export default eventModal
+export default EventModal
