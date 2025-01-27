@@ -39,10 +39,13 @@ interface EventModalProps {
 const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventModalProps) => {
     
     const [name, setName] = useState<string>('');
+    const [nameError, setNameError] = useState<boolean>(false);
     const [description, setDescription] = useState<string>('');
+    const [descriptionError, setDescriptionError] = useState<boolean>(false);
     const [start, setStart] = useState<Dayjs | null>(dayjs(event.start));
+    const [startDateError, seteStartDateError] = useState(false);
     const [end, setEnd] = useState<Dayjs | null>(dayjs(event.start));
-    
+    const [endDateError, seteEndDateError] = useState(false);
     
     const modalWidth = 300;
     const modalHeight = 378;
@@ -69,7 +72,34 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
     }
     
     function validateForm() {
-        return name.length > 0 && description.length > 0 && start !== null && end !== null && start.isBefore(end);
+        let valid = true;
+        if (name.length === 0) {
+            setNameError(true);
+            valid = false;
+        } else {
+            setNameError(false);
+        }
+        if (description.length === 0) {
+            setDescriptionError(true);
+            valid = false;
+        } else {
+            setDescriptionError(false);
+        }
+        if (start === null || start === undefined) {
+            valid = false;
+            seteStartDateError(true);
+        } else {
+            seteStartDateError(false);
+        }
+        if (end === null || end === undefined || end.isBefore(start) || start?.isSame(end) || start?.isAfter(end)) {
+            valid = false;
+            seteEndDateError(true);
+        } else {
+            seteEndDateError(false);
+        }
+        console.log(start?.toISOString(), end?.toISOString());
+
+        return valid;
     }
 
     async function handleAddEvent() {
@@ -105,7 +135,6 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
         }           
     }
 
-    
     return (
         <div className='absolute w-[300px]' style={{
         left: `${adjustedX}px`,
@@ -115,20 +144,30 @@ const EventModal = ({event,position,mode,setEvents,events,closeModal} : EventMod
       }}>
         <div className='bg-white p-4 rounded-lg shadow-lg flex flex-col gap-3'>
             <h2 className='text-xl font-bold mb-4 text-black'>Dodaj nowe zdarzenie</h2>
-            <TextField id='name' value={name} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} label="Imię i nazwisko" variant="outlined" />
-            <TextField id='description' value={description} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)} label="Opis" variant="outlined" />
+            <TextField required={true} error={nameError} id='name' value={name} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} label="Imię i nazwisko" variant="outlined" />
+            <TextField required={true} error={descriptionError} id='description' value={description} onChange={(e : React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)} label="Opis" variant="outlined" />
             <LocalizationProvider adapterLocale="pl" dateAdapter={AdapterDayjs}>
                 <DateTimePicker
                     label="od"
                     value={start}
                     onChange={(newDate) => setStart(newDate)}
                     ampm={false}
+                    slotProps={{
+                        textField: {
+                          error: startDateError,
+                        },
+                    }}
                 />
                 <DateTimePicker
                     label="do"
                     ampm={false}
                     value={end}
                     onChange={(newDate) => setEnd(newDate)}
+                    slotProps={{
+                        textField: {
+                          error: endDateError,
+                        },
+                    }}
                 />
             </LocalizationProvider>
             <div>
