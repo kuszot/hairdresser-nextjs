@@ -16,7 +16,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To run the db type:
+To run the database type:
 ```bash
 npm run json-server
 ```
